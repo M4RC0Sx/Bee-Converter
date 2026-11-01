@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "front": "beeconverter:block/bee_converter_front",
+    "side": "beeconverter:block/bee_converter_side",
+    "top": "beeconverter:block/bee_converter_top",
+    "bottom": "beeconverter:block/bee_converter_bottom"
+  }
+}

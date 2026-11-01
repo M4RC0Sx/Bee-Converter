@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["III", "ICI", "RHR"],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "C": { "item": "productivebees:sturdy_bee_cage" },
+    "R": { "item": "minecraft:redstone" },
+    "H": { "item": "minecraft:hopper" }
+  },
+  "result": { "id": "beeconverter:bee_converter", "count": 1 }
+}

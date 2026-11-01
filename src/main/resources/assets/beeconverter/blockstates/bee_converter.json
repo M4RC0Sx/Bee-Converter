@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "beeconverter:block/bee_converter" },
+    "facing=east": { "model": "beeconverter:block/bee_converter", "y": 90 },
+    "facing=south": { "model": "beeconverter:block/bee_converter", "y": 180 },
+    "facing=west": { "model": "beeconverter:block/bee_converter", "y": 270 }
+  }
+}

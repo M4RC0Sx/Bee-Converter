@@ -1,0 +1,33 @@
+# Gradle
+.gradle/
+build/
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+.vscode/
+.eclipse/
+bin/
+
+# Minecraft dev runs
+run/
+runs/
+run-data/
+
+# Datagen cache
+src/generated/resources/.cache/
+
+# Node (semantic-release tooling)
+node_modules/
+
+# OS
+.DS_Store
+
+# Local design previews
+previews/
+
+# Local publishing material (screenshots, icon, asset scripts)
+docs/

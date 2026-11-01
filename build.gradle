@@ -1,0 +1,175 @@
+plugins {
+    id 'java-library'
+    id 'idea'
+    id 'net.neoforged.moddev' version '2.0.134'
+    id 'com.diffplug.spotless' version '7.0.4'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+repositories {
+    mavenCentral()
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Modrinth'
+                url = 'https://api.modrinth.com/maven'
+            }
+        }
+        filter {
+            includeGroup 'maven.modrinth'
+        }
+    }
+}
+
+neoForge {
+    version = project.neoforge_version
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+
+    unitTest {
+        enable()
+        testedMod = mods."${mod_id}"
+    }
+
+    runs {
+        client {
+            client()
+        }
+
+        server {
+            server()
+            programArguments.add '--nogui'
+        }
+
+        gameTestServer {
+            type = 'gameTestServer'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        clientData {
+            clientData()
+            programArguments.addAll '--mod', project.mod_id, '--all',
+                    '--output', file('src/generated/resources/').getAbsolutePath(),
+                    '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+
+        serverData {
+            serverData()
+            programArguments.addAll '--mod', project.mod_id, '--all',
+                    '--output', file('src/generated/resources/').getAbsolutePath(),
+                    '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
+}
+
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+}
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+    productiveBeesJar {
+        transitive = false
+    }
+}
+
+// ProductiveLib (upgrade items and IUpgradeableBlockEntity) is not published on a maven; Productive
+// Bees ships it as a jarJar. It is extracted from there for compiling only: at runtime Productive
+// Bees provides it.
+def extractProductiveLib = tasks.register('extractProductiveLib', Copy) {
+    from({ zipTree(configurations.productiveBeesJar.singleFile) }) {
+        include 'META-INF/jarjar/productivelib-*.jar'
+        eachFile { it.path = it.name }
+    }
+    includeEmptyDirs = false
+    into layout.buildDirectory.dir('productivelib')
+}
+
+dependencies {
+    // Productive Bees has no public API: its internals are used, and only through compat/PbBridge.
+    implementation "maven.modrinth:productivebees:${productivebees_version}"
+    implementation "maven.modrinth:geckolib:${geckolib_version}"
+
+    productiveBeesJar "maven.modrinth:productivebees:${productivebees_version}"
+    compileOnly fileTree(layout.buildDirectory.dir('productivelib')) {
+        include '*.jar'
+        builtBy extractProductiveLib
+    }
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+            minecraft_version        : minecraft_version,
+            minecraft_version_range  : minecraft_version_range,
+            neo_version              : neoforge_version,
+            neo_version_range        : neoforge_version_range,
+            loader_version_range     : loader_version_range,
+            mod_id                   : mod_id,
+            mod_name                 : mod_name,
+            mod_license              : mod_license,
+            mod_version              : mod_version,
+            mod_authors              : mod_authors,
+            mod_description          : mod_description,
+            productivebees_version_range: productivebees_version_range,
+            productivelib_version_range: productivelib_version_range,
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties
+    }
+
+    exclude('.cache/**')
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.named('jar') {
+    // beeconverter-<mod version>+mc<minecraft version>-neoforge.jar. The NeoForge version is left
+    // out on purpose: the mod runs on any NeoForge in neoforge_version_range.
+    archiveVersion = "${mod_version}+mc${minecraft_version}"
+    archiveClassifier = 'neoforge'
+    exclude '**/datagen/**', '**/gametest/**', 'data/*/structure/**'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+spotless {
+    java {
+        target 'src/*/java/**/*.java'
+        googleJavaFormat('1.25.2')
+        removeUnusedImports()
+        endWithNewline()
+    }
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}

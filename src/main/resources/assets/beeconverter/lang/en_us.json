@@ -1,0 +1,10 @@
+{
+  "block.beeconverter.bee_converter": "Bee Converter",
+  "itemGroup.beeconverter": "Bee Converter",
+  "gui.beeconverter.energy": "%s / %s FE",
+  "gui.beeconverter.progress": "Conversion attempt: %s%%",
+  "gui.beeconverter.attempt_time": "Time per attempt: %s s",
+  "gui.beeconverter.valid_upgrades": "Valid upgrades:",
+  "beeconverter.information.upgrade.upgrade_time.bee_converter": "Cuts the time per conversion attempt by %s%%.\n   Up to four upgrades can be installed and their effects stack.",
+  "beeconverter.information.upgrade.upgrade_time_2.bee_converter": "Cuts the time per conversion attempt by %s%%, twice the effect of Speed.\n   Four of them make conversions almost instant."
+}

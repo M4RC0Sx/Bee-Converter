@@ -1,0 +1,60 @@
+name: release
+
+on:
+  push:
+    branches:
+      - master
+
+# Never run two releases at once: the second one would compute the same version.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      #----------------------------------------------
+      #       Check-out repo (full history for versioning)
+      #----------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      #----------------------------------------------
+      #       Install Java and Gradle (to build the jar)
+      #----------------------------------------------
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: "21"
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      #----------------------------------------------
+      #       Install Node.js and Semantic Release
+      #----------------------------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install Semantic Release
+        run: npm install -g semantic-release@25.0.9 @semantic-release/git@11.0.1 @semantic-release/changelog@7.0.0 @semantic-release/exec@7.1.0 conventional-changelog-conventionalcommits@10.4.1
+
+      #----------------------------------------------
+      #       Semantic Release (versions, builds the jar, publishes the GitHub release)
+      #----------------------------------------------
+      - name: Semantic Release
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,2 @@
+# Run `sdk env install` in this directory to get the matching JDK.
+java=21.0.9-zulu
